@@ -1,18 +1,27 @@
-# Use an official lightweight Python image
 FROM python:3.10-slim
 
-# Set the working directory inside the container
+# Prevent Python from writing .pyc files and enable unbuffered logging
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Create a non-root user for security
+RUN adduser --disabled-password --gecos '' appuser
+
 WORKDIR /app
 
-# Copy the requirements file and install dependencies
+# Copy requirements first to leverage Docker layer caching
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
+# Copy application code
 COPY . .
 
-# Expose port 8000 for the web server
+# Change ownership of the app directory to the non-root user
+RUN chown -R appuser:appuser /app
+
+# Switch to the non-root user
+USER appuser
+
 EXPOSE 8000
 
-# Command to run the FastAPI app using Uvicorn
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]

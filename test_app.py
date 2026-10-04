@@ -3,25 +3,27 @@ from app import app
 
 client = TestClient(app)
 
-# Test 1: Verify the root endpoint returns the correct welcome message
 def test_read_root():
     response = client.get("/")
     assert response.status_code == 200
     assert response.json() == {"message": "Hello World from Cloud App!"}
 
-# Test 2: Verify the health check endpoint for load balancers/container orchestration
 def test_health_check():
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "healthy"}
+    assert response.json() == {"status": "healthy", "version": "1.1.0"}
 
-# Test 3: Verify dynamic routing works with an integer item_id
-def test_read_item():
+def test_read_item_success():
     response = client.get("/items/42")
     assert response.status_code == 200
     assert response.json() == {"item_id": 42, "description": "This is a sample item"}
 
-# Test 4: Verify the server correctly accepts and processes POST request payloads
+def test_read_item_failure():
+    # Verify the application correctly rejects invalid IDs
+    response = client.get("/items/0")
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Item ID must be positive"}
+
 def test_echo_data():
     payload = {"name": "Assessment User", "project": "Docker Deployment"}
     response = client.post("/echo", json=payload)
