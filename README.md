@@ -37,3 +37,32 @@ The live application is currently accessible at:
    ```bash
    git clone [https://github.com/](https://github.com/)<YOUR-USERNAME>/my-cloud-app.git
    cd my-cloud-app
+
+
+##Steps to Reproduce
+
+
+1. Local Build & ECR Push
+Bash
+# Authenticate Docker with AWS ECR
+aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 872575360883.dkr.ecr.eu-north-1.amazonaws.com
+
+# Build local Docker image
+docker build -t my-cloud-app .
+
+# Tag image for ECR repository
+docker tag my-cloud-app:latest [872575360883.dkr.ecr.eu-north-1.amazonaws.com/my-cloud-app:latest](https://872575360883.dkr.ecr.eu-north-1.amazonaws.com/my-cloud-app:latest)
+
+# Push image to ECR
+docker push [872575360883.dkr.ecr.eu-north-1.amazonaws.com/my-cloud-app:latest](https://872575360883.dkr.ecr.eu-north-1.amazonaws.com/my-cloud-app:latest)
+2. EC2 Deployment from ECR
+Bash
+# SSH into the Ubuntu EC2 instance
+ssh -i "cloud-key.pem" ubuntu@13.60.202.32
+
+# Authenticate Docker on EC2 with ECR
+aws ecr get-login-password --region eu-north-1 | sudo docker login --username AWS --password-stdin 872575360883.dkr.ecr.eu-north-1.amazonaws.com
+
+# Pull and run the container from ECR on port 8000
+sudo docker run -d -p 8000:8000 [872575360883.dkr.ecr.eu-north-1.amazonaws.com/my-cloud-app:latest](https://872575360883.dkr.ecr.eu-north-1.amazonaws.com/my-cloud-app:latest)
+
